@@ -73,7 +73,7 @@ end
 function loader:index_check()
   self.index_time=self.index_time+1
   if self.index_time>self.targets_mean[self.index_batch]:size(1) then
-    print(self.index_batch..';'..self.index_time)
+    -- print(self.index_batch..';'..self.index_time)
     self.index_batch=self.index_batch+1
     if self.index_batch>#self.targets_mean then
       self.index_batch=1
@@ -87,23 +87,30 @@ function loader:getNextData()
   local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1)
   local y2=self.targets_std[self.index_batch]:narrow(1,self.index_time,1)
   self:index_check()
+  print(self.index_batch..','..self.index_time)
   return x,y1,y2
 end
 
 function loader:getBatchData(batches)
-  self.input_batch={}
-  self.target_batch={}
+  local dim_input=25
+  local dim_target=4
+  local input_batch=torch.Tensor(batches,1,self.len_data,dim_input)
+  local target_batch=torch.Tensor(batches,dim_target)
   for i=1,batches do
     local x,y1,y2=self:getNextData()
-    self.input_batch[i]=x
-    self.target_batch[i]=torch.cat({
-      y1[{{},{17}}],
-      y1[{{},{20}},
-      y2[{{},{17}}]],
-      y2[{{},{20}}]
-    },2)
+    input_batch[{{i},1,{},{}}]:copy(x)
+    target_batch[{{i},{}}]:copy(
+      torch.cat({
+        y1[{{},{17}}],
+        y1[{{},{20}}],
+        y2[{{},{17}}],
+        y2[{{},{20}}]
+      },2)
+    )
   end
-
+  input_batch=torch.Tensor(input_batch)
+  target_batch=torch.Tensor(target_batch)
+  return input_batch,target_batch
 end
 
 return loader
