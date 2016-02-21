@@ -57,15 +57,16 @@ function loader:save_data()
   torch.save(dataset_path..'for_torch/inputs.t7',self.inputs)
   torch.save(dataset_path..'for_torch/targets_mean.t7',self.targets_mean)
   torch.save(dataset_path..'for_torch/targets_std.t7',self.targets_std)
+  print('data saved at: '..dataset_path..'for_torch/')
 end
 
 function loader:load_data()
   local data = {}
   setmetatable(data, loader)
+  print('load data from: '..dataset_path..'for_torch/')
   data.inputs=torch.load(dataset_path..'for_torch/inputs.t7')
   data.targets_mean=torch.load(dataset_path..'for_torch/targets_mean.t7')
   data.targets_std=torch.load(dataset_path..'for_torch/targets_std.t7')
-  print('load data: '..#data.inputs)
   return data
 end
 
@@ -89,6 +90,20 @@ function loader:getNextData()
   return x,y1,y2
 end
 
--- function loader:getBatchData()
+function loader:getBatchData(batches)
+  self.input_batch={}
+  self.target_batch={}
+  for i=1,batches do
+    local x,y1,y2=self:getNextData()
+    self.input_batch[i]=x
+    self.target_batch[i]=torch.cat({
+      y1[{{},{17}}],
+      y1[{{},{20}},
+      y2[{{},{17}}]],
+      y2[{{},{20}}]
+    },2)
+  end
+
+end
 
 return loader
