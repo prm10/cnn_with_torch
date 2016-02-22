@@ -6,8 +6,7 @@ local ReLU = nn.ReLU
 local Max = nn.SpatialMaxPooling
 local SBatchNorm = nn.SpatialBatchNormalization
 
-local function createModel(opt)
-  local depth=opt.depth
+local function createModel()
   -- local function basicblock(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
   --   return nn.Sequential()
   --     :add(Convolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH))
@@ -48,13 +47,13 @@ local function createModel(opt)
         :add(nn.Sequential():add(nn.Linear(20,2)):add(nn.Tanh()))
         :add(nn.Sequential():add(nn.Linear(20,2)):add(nn.Sigmoid()))
     )
---weight initial
 
+-- weight initial
   local function ConvInit(name)
     for k,v in pairs(model:findModules(name)) do
        local n = v.kW*v.kH*v.nOutputPlane
        v.weight:normal(0,math.sqrt(2/n))
-       if cudnn.version >= 4000 then
+       if nn.version >= 4000 then
           v.bias = nil
           v.gradBias = nil
        else
@@ -69,10 +68,10 @@ local function createModel(opt)
     end
   end
 
-  ConvInit('cudnn.SpatialConvolution')
   ConvInit('nn.SpatialConvolution')
-  BNInit('fbnn.SpatialBatchNormalization')
-  BNInit('cudnn.SpatialBatchNormalization')
+  ConvInit('nn.SpatialConvolution')
+  BNInit('nn.SpatialBatchNormalization')
+  BNInit('nn.SpatialBatchNormalization')
   BNInit('nn.SpatialBatchNormalization')
   for k,v in pairs(model:findModules('nn.Linear')) do
     v.bias:zero()
