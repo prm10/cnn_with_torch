@@ -1,5 +1,5 @@
 require "torch"
-local dataset_path='/media/prm14/资料/GitHub/GL_data/cnn/'
+local dataset_path='../GL_data/cnn/'
 local loader = {}
 loader.__index=loader
 loader.len_data=360*5;-- dataset cover over 5 hours
@@ -67,11 +67,16 @@ function loader:load_data()
     data.inputs=torch.load(dataset_path..'for_torch/inputs.t7')
     data.targets_mean=torch.load(dataset_path..'for_torch/targets_mean.t7')
     data.targets_std=torch.load(dataset_path..'for_torch/targets_std.t7')
+    local i1=0
+    for i=1,#data.inputs do
+      i1=i1+data.targets_std[i]:size(1)
+    end
+    print('get data with '..i1..' samples')
     return data
 end
 
 function loader:index_check()
-    self.index_time=self.index_time+1
+    self.index_time=self.index_time+10
     if self.index_time>self.targets_mean[self.index_batch]:size(1) then
         -- print(self.index_batch..';'..self.index_time)
         self.index_batch=self.index_batch+1
@@ -87,7 +92,7 @@ function loader:getNextData()
     local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1)
     local y2=self.targets_std[self.index_batch]:narrow(1,self.index_time,1)
     self:index_check()
-    print(self.index_batch..','..self.index_time)
+    -- print(self.index_batch..','..self.index_time)
     return x,y1,y2
 end
 

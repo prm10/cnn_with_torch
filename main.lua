@@ -1,13 +1,14 @@
 require 'torch'
 require 'gnuplot'
+require 'optim'
 local data_loader = require 'datasets/loader'
 -- local loader = data_loader.import_data()
 -- loader:save_data()
 
 local opt={
-    batches=100,
-    iterations=1000,
-    save_every=100,
+    batches=32,
+    iterations=2000,
+    save_every=10,
     savefile='model_autosave',
     loadfile='model_autosave'
 }
@@ -36,7 +37,7 @@ end
 -- optimization stuff
 local losses = {}
 -- local optim_state = {learningRate = 1e-1}
-local optim_state = {learningRate=1e-4,momentum=0.9,weightDecay=0}
+local optim_state = {learningRate=0.1,momentum=0.9,weightDecay=1e-4}
 local time = 0
 for i = 1, opt.iterations do
     -- local _, loss = optim.adagrad(feval, params, optim_state)
@@ -45,12 +46,10 @@ for i = 1, opt.iterations do
     losses[#losses + 1] = loss[1]
     time = time + timer:time().real
     if i % opt.save_every == 0 then
-        torch.save(opt.savefile, {model,criterion})
+        torch.save(opt.savefile, params)
         print(string.format("iteration %4d, loss = %6.8f,gradnorm = %6.4e, time = %6.4f", i, loss[1],grad_params:norm(),time))
         time=0
     end
 end
-
-
 
 --]]
