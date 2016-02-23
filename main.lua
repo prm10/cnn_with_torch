@@ -5,14 +5,14 @@ local data_loader = require 'datasets/loader'
 -- loader:save_data()
 
 local opt={
-  batches=100,
-  iterations=1000,
-  save_every=100,
-  savefile='model_autosave'
-  loadfile='model_autosave'
+    batches=100,
+    iterations=1000,
+    save_every=100,
+    savefile='model_autosave',
+    loadfile='model_autosave'
 }
 local loader = data_loader:load_data()
-local input_batch,target_batch=loader:getBatchData(100)
+-- local input_batch,target_batch=loader:getBatchData(100)
 -- print(#input_batch)
 -- print(#target_batch)
 -- gnuplot.plot(input_batch[{10,1,{},1}])
@@ -20,16 +20,16 @@ local model,criterion = require('models/create_model')()
 local params, grad_params = model:getParameters()
 
 function feval()
-  ------------------ get minibatch -------------------
-  local input,target = loader:getBatchData(opt.batches)
-  --ff
-  local output = model:forward(input)
-  local loss = criterion:forward(model.output, target)
-  model:zeroGradParameters()
-  --bp
-  criterion:backward(model.output, target)
-  model:backward(input, criterion.gradInput)
-  return loss, grad_params
+    ------------------ get minibatch -------------------
+    local input,target = loader:getBatchData(opt.batches)
+    --ff
+    local output = model:forward(input)
+    local loss = criterion:forward(model.output, target)
+    model:zeroGradParameters()
+    --bp
+    criterion:backward(model.output, target)
+    model:backward(input, criterion.gradInput)
+    return loss, grad_params
 end
 
 --[
@@ -50,5 +50,7 @@ for i = 1, opt.iterations do
         time=0
     end
 end
+
+
 
 --]]
