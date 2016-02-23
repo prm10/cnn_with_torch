@@ -7,7 +7,7 @@ local data_loader = require 'datasets/loader'
 
 local opt={
     batches=32,
-    iterations=2000,
+    iterations=200,
     save_every=10,
     savefile='model_autosave',
     loadfile='model_autosave'
@@ -37,7 +37,7 @@ end
 -- optimization stuff
 local losses = {}
 -- local optim_state = {learningRate = 1e-1}
-local optim_state = {learningRate=0.1,momentum=0.9,weightDecay=1e-4}
+local optim_state = {learningRate=0.01,momentum=0.9,weightDecay=1e-4}
 local time = 0
 for i = 1, opt.iterations do
     -- local _, loss = optim.adagrad(feval, params, optim_state)
@@ -51,5 +51,32 @@ for i = 1, opt.iterations do
         time=0
     end
 end
+--]]
 
+params:copy(torch.load(opt.loadfile))
+local last_batch=#loader.targets_mean
+local len=500--loader.targets_mean[last_batch]:size(1)
+local predict=torch.Tensor(len,4)
+local target=torch.Tensor(len,4)
+local x=torch.Tensor(1,1,loader.len_data,25)
+for i=1,len do
+  x:copy(loader.inputs[last_batch]:narrow(1,i,loader.len_data))
+  local y1=loader.targets_mean[last_batch]:narrow(1,i,1)
+  local y2=loader.targets_std[last_batch]:narrow(1,i,1)
+  target[{{i},{}}]:copy(
+      torch.cat({
+          y1[{{},{17}}],
+          y1[{{},{20}}],
+          y2[{{},{17}}],
+          y2[{{},{20}}]
+      },2)
+  )
+  predict[{i,{}}]:copy(model:forward(x))
+  if i%torch.floor(len/10)==0 then
+    print(i..'/'..len)
+  end
+end
+local loss = criterion:forward(predict, target)
+print(loss)
+gnuplot.plot({predict[{{},1}]},{target[{{},1}]})
 --]]

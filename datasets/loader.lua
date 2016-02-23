@@ -80,7 +80,7 @@ function loader:index_check()
     if self.index_time>self.targets_mean[self.index_batch]:size(1) then
         -- print(self.index_batch..';'..self.index_time)
         self.index_batch=self.index_batch+1
-        if self.index_batch>#self.targets_mean then
+        if self.index_batch>(#self.targets_mean-1) then
             self.index_batch=1
         end
         self.index_time=1
@@ -117,5 +117,13 @@ function loader:getBatchData(batches)
     target_batch=torch.Tensor(target_batch)
     return input_batch,target_batch
 end
+
+-- function loader:getValData ()
+--   local t=1
+--   local len=self.targets_mean[#self.targets_mean]:size(1)
+--   while  do
+--     -- body...
+--   end
+-- end
 
 return loader
