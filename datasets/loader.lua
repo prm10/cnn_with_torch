@@ -2,8 +2,11 @@ require "torch"
 local dataset_path='../GL_data/cnn/'
 local loader = {}
 loader.__index=loader
+loader.patches=23
+loader.dim_input=25
+loader.dim_target=1
 loader.len_data=360*5;-- dataset cover over 5 hours
-loader.len_target=6*60;-- target predict next 1 hours
+loader.len_target=6*20;-- target predict next 20 minutes
 loader.index_time=1
 loader.index_batch=1
 
@@ -39,7 +42,7 @@ function loader.import_data()
     end
 
     print("reading data")
-    for i=1,26 do
+    for i=1,loader.patches do
         print("data_"..i..".csv")
         data.inputs[i]=readcsv(dataset_path.."data_"..i..".csv")
         data.targets_mean[i]=readcsv(dataset_path.."target_mean_"..i..".csv")
@@ -88,30 +91,30 @@ function loader:index_check()
 end
 
 function loader:getNextData()
-    local x=self.inputs[self.index_batch]:narrow(1,self.index_time,self.len_data)
-    local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1)
-    local y2=self.targets_std[self.index_batch]:narrow(1,self.index_time,1)
-    self:index_check()
-    -- print(self.index_batch..','..self.index_time)
-    return x,y1,y2
+  -- self.index_batch=1
+  local x=self.inputs[self.index_batch]:narrow(1,self.index_time,self.len_data)
+  local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1):div(2)
+  local y2=self.targets_std[self.index_batch]:narrow(1,self.index_time,1)
+  self:index_check()
+  -- print(self.index_batch..','..self.index_time)
+  return x,y1,y2
 end
 
 function loader:getBatchData(batches)
-    local dim_input=25
-    local dim_target=4
-    local input_batch=torch.Tensor(batches,1,self.len_data,dim_input)
-    local target_batch=torch.Tensor(batches,dim_target)
+    local input_batch=torch.Tensor(batches,1,self.len_data,loader.dim_input)
+    local target_batch=torch.Tensor(batches,loader.dim_target)
     for i=1,batches do
         local x,y1,y2=self:getNextData()
         input_batch[{{i},1,{},{}}]:copy(x)
-        target_batch[{{i},{}}]:copy(
-            torch.cat({
-                y1[{{},{17}}],
-                y1[{{},{20}}],
-                y2[{{},{17}}],
-                y2[{{},{20}}]
-            },2)
-        )
+        target_batch[{{i},{}}]:copy(y1[{{},17}])
+        -- target_batch[{{i},{}}]:copy(
+        --     torch.cat({
+        --         y1[{{},{17}}],
+        --         y1[{{},{20}}],
+        --         y2[{{},{17}}],
+        --         y2[{{},{20}}]
+        --     },2)
+        -- )
     end
     input_batch=torch.Tensor(input_batch)
     target_batch=torch.Tensor(target_batch)

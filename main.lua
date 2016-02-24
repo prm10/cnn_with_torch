@@ -2,6 +2,8 @@ require 'torch'
 require 'gnuplot'
 require 'optim'
 local data_loader = require 'datasets/loader'
+
+--transform data from the csv
 -- local loader = data_loader.import_data()
 -- loader:save_data()
 
@@ -56,21 +58,22 @@ end
 params:copy(torch.load(opt.loadfile))
 local last_batch=#loader.targets_mean
 local len=500--loader.targets_mean[last_batch]:size(1)
-local predict=torch.Tensor(len,4)
-local target=torch.Tensor(len,4)
-local x=torch.Tensor(1,1,loader.len_data,25)
+local predict=torch.Tensor(len,loader.dim_target)
+local target=torch.Tensor(len,loader.dim_target)
+local x=torch.Tensor(1,1,loader.len_data,loader.dim_input)
 for i=1,len do
   x:copy(loader.inputs[last_batch]:narrow(1,i,loader.len_data))
   local y1=loader.targets_mean[last_batch]:narrow(1,i,1)
   local y2=loader.targets_std[last_batch]:narrow(1,i,1)
-  target[{{i},{}}]:copy(
-      torch.cat({
-          y1[{{},{17}}],
-          y1[{{},{20}}],
-          y2[{{},{17}}],
-          y2[{{},{20}}]
-      },2)
-  )
+  target[{{i},{}}]:copy(y1[{{},{17}}])
+  -- target[{{i},{}}]:copy(
+  --     torch.cat({
+  --         y1[{{},{17}}],
+  --         y1[{{},{20}}],
+  --         y2[{{},{17}}],
+  --         y2[{{},{20}}]
+  --     },2)
+  -- )
   predict[{i,{}}]:copy(model:forward(x))
   if i%torch.floor(len/10)==0 then
     print(i..'/'..len)
