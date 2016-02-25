@@ -93,7 +93,7 @@ end
 function loader:getNextData()
   -- self.index_batch=1
   local x=self.inputs[self.index_batch]:narrow(1,self.index_time,self.len_data)
-  local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1):div(2)
+  local y1=self.targets_mean[self.index_batch]:narrow(1,self.index_time,1)
   local y2=self.targets_std[self.index_batch]:narrow(1,self.index_time,1)
   self:index_check()
   -- print(self.index_batch..','..self.index_time)

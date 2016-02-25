@@ -8,8 +8,8 @@ local data_loader = require 'datasets/loader'
 -- loader:save_data()
 
 local opt={
-    batches=32,
-    iterations=200,
+    batches=20,
+    iterations=5000,
     save_every=10,
     savefile='model_autosave',
     loadfile='model_autosave'
@@ -39,7 +39,7 @@ end
 -- optimization stuff
 local losses = {}
 -- local optim_state = {learningRate = 1e-1}
-local optim_state = {learningRate=0.01,momentum=0.9,weightDecay=1e-4}
+local optim_state = {learningRate=0.001,momentum=0.9,weightDecay=1e-5}
 local time = 0
 for i = 1, opt.iterations do
     -- local _, loss = optim.adagrad(feval, params, optim_state)
